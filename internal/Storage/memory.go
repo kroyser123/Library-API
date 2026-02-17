@@ -1,4 +1,4 @@
-package Storage
+/*package Storage
 
 import (
 	"errors"
@@ -108,4 +108,4 @@ func containsIgnoreCase(s, substr string) bool {
 		return true
 	}
 	return strings.Contains(strings.ToLower(s), strings.ToLower(substr))
-}
+}*/

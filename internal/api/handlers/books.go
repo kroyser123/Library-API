@@ -9,6 +9,7 @@ import (
 	"libraryapi/internal/domain/repositories"
 	"libraryapi/internal/pkg/cache"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -80,8 +81,8 @@ func hasfilters(queryparams map[string]string) bool {
 	return false
 }
 func generatePaginationCacheKey(pagination dto.Pagination) string {
-	k := string(pagination.Page)
-	j := string(pagination.Limit)
+	k := strconv.Itoa(pagination.Page)
+	j := strconv.Itoa(pagination.Limit)
 	return "books:page:" + k + ":limit:" + j
 }
 func calculateTotalPages(totalItems, perPage int) int {
@@ -140,25 +141,25 @@ func (h *BookHandler) GetBooks(w http.ResponseWriter, r *http.Request) {
 	}
 	totalpages := calculateTotalPages(totalItems, pagination.Limit)
 	response := paginatedresponse{
-		Data : books,
-		Meta : dto.PaginationInfo{
+		Data: books,
+		Meta: dto.PaginationInfo{
 			CurrentPage: pagination.Page,
-			PerPage: pagination.Limit,
-			TotalPages: totalpages,
-			TotalItems: totalItems,
-			HasNext: pagination.Page < totalpages,
-			HasPrev: pagination.Page > 1,
-			},
-		}
-		if cacheKey != "" {
-				if err := h.cache.Set(cacheKey, books, 5*time.Minute); err != nil {
-		log.Warn().Err(err).Msg("Failed to cache books")
+			PerPage:     pagination.Limit,
+			TotalPages:  totalpages,
+			TotalItems:  totalItems,
+			HasNext:     pagination.Page < totalpages,
+			HasPrev:     pagination.Page > 1,
+		},
 	}
+	if cacheKey != "" {
+		if err := h.cache.Set(cacheKey, books, 5*time.Minute); err != nil {
+			log.Warn().Err(err).Msg("Failed to cache books")
 		}
-		if err := responses.Success(w, response, ""); err != nil {
-			log.Error().Err(err).Msg("Failed to send response")
-			return
-		}
+	}
+	if err := responses.Success(w, response, ""); err != nil {
+		log.Error().Err(err).Msg("Failed to send response")
+		return
+	}
 }
 
 func (h *BookHandler) AddBook(w http.ResponseWriter, r *http.Request) {
